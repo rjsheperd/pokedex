@@ -1,0 +1,10 @@
+{:paths     ["src"]
+ :deps      {org.clojure/clojure {:mvn/version "1.12.0"}
+             com.datomic/peer    {:mvn/version "1.0.7075"}}
+
+ :aliases
+ {:run 
+  {:main-opts ["-m" "pokedex.core"]}}
+
+ :mvn/repos {"central" {:url "https://repo1.maven.org/maven2/"}
+             "clojars" {:url "https://clojars.org/repo"}}}
