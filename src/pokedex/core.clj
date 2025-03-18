@@ -2,7 +2,10 @@
   (:require
    [pokedex.db :refer [connect! ->datomic-uri datomic-conn]]
    [pokedex.schema :refer [schema]]
-   [datomic.api :as d])
+   [datomic.api :as d]
+   [clojure.data.csv :as csv]
+   [clojure.java.io :as io]
+   [clojure.set :as set])
   (:gen-class))
 
 (comment
@@ -11,6 +14,74 @@
 
   ;; Transact the schema
   (d/transact @datomic-conn schema)
+
+  (with-open [reader (io/reader (io/resource "Pokemon.csv"))]
+    (doall
+      (csv/read-csv reader)))
+
+  (defn csv-data->maps [csv-data]
+    (map zipmap
+         (->> (first csv-data) ;; First row is the header
+              (map keyword) ;; Drop if you want string keys instead
+              repeat)
+         (rest csv-data)))
+
+  (with-open [reader (io/reader (io/resource "Pokemon.csv"))]
+    (csv-data->maps (doall (csv/read-csv reader))))
+
+  (defn transform-pokemon [pokemon]
+    (-> pokemon
+        (set/rename-keys {:name :pokemon/name
+                          :nat_id :pokemon/national-pokedex-id
+                          :classification :pokemon/species
+                          :hp :pokemon/base-hp
+                          :atk :pokemon/base-atk
+                          :def :pokemon/base-def
+                          :sp_atk :pokemon/base-spatk
+                          :sp_def :pokemon/base-spdef
+                          :speed :pokemon/base-spd
+                          :base_total :pokemon/base-total})
+
+        (update :pokemon/national-pokedex-id parse-long)
+        (update :pokemon/base-hp parse-long)
+        (update :pokemon/base-atk parse-long)
+        (update :pokemon/base-def parse-long)
+        (update :pokemon/base-spatk parse-long)
+        (update :pokemon/base-spdef parse-long)
+        (update :pokemon/base-spd parse-long)
+        (update :pokemon/base-total parse-long)
+
+        (assoc :pokemon/type
+               (if (clojure.string/blank? (:type2 pokemon))
+                 [:pokemon-type/name (:type1 pokemon)]
+                 [[:pokemon-type/name (:type1 pokemon)]
+                  [:pokemon-type/name (:type2 pokemon)]]
+                 )
+               )
+
+        (assoc :pokemon/growth-rate [:growth/name (:xp_growth pokemon)])
+
+        (dissoc :type1 :type2 :xp_growth :base_happiness :gen :capture_rate :base_egg_steps)
+        )
+    )
+
+  (transform-pokemon {:base_egg_steps "30720",
+                       :sp_atk "130",
+                       :xp_growth "Slow",
+                       :base_total "600",
+                       :capture_rate "3",
+                       :gen "7",
+                       :speed "65",
+                       :name "Magearna",
+                       :atk "95",
+                       :classification "Artificial",
+                       :nat_id "801",
+                       :type1 "Steel",
+                       :type2 "",
+                       :def "115",
+                       :hp "80",
+                       :sp_def "115",
+                       :base_happiness "0"})
 
   ;; Insert Pokemon Types
   (d/transact @datomic-conn
@@ -112,166 +183,6 @@
          :where [?t :pokemon-type/name ?name]]
        (d/db @datomic-conn))
 
-  ;; Insert a Pokemon
-  (d/transact @datomic-conn
-              [{:db/id        -1
-                :pokemon/name "Bulbasaur"
-                :pokemon/national-pokedex-id 1
-                :pokemon/type [[:pokemon-type/name "Grass"]
-                               [:pokemon-type/name "Poison"]]
-                :pokemon/species "Seed"
-                :pokemon/pokedex-entry "For some time after its birth, it grows by taking nourishment from the seed on its back."
-                :pokemon/growth-rate [:pokemon-growth/name "Medium Slow"]
-                :pokemon/egg-groups [[:pokemon-egg-group/name "Grass"]
-                                     [:pokemon-egg-group/name "Monster"]]
-                :pokemon/base-hp 45
-                :pokemon/base-atk 49
-                :pokemon/base-def 49
-                :pokemon/base-spatk 65
-                :pokemon/base-spdef 65
-                :pokemon/base-spd 45
-                :pokemon/base-total 318
-                :pokemon/evo-type "Level"
-                :pokemon/evo-level 16
-                :pokemon/evo-to -2}
-               {:db/id        -2
-                :pokemon/name "Ivysaur"
-                :pokemon/national-pokedex-id 2
-                :pokemon/type [[:pokemon-type/name "Grass"]
-                               [:pokemon-type/name "Poison"]]
-                :pokemon/species "Seed"
-                :pokemon/pokedex-entry "When the bud on its back starts swelling, a sweet aroma wafts to indicate the flower’s coming bloom."
-                :pokemon/growth-rate [:pokemon-growth/name "Medium Slow"]
-                :pokemon/egg-groups [[:pokemon-egg-group/name "Grass"]
-                                     [:pokemon-egg-group/name "Monster"]]
-                :pokemon/base-hp 60
-                :pokemon/base-atk 62
-                :pokemon/base-def 63
-                :pokemon/base-spatk 80
-                :pokemon/base-spdef 80
-                :pokemon/base-spd 60
-                :pokemon/base-total 405}
-               {:db/id        -3
-                :pokemon/name "Charmander"
-                :pokemon/national-pokedex-id 4
-                :pokemon/type [[:pokemon-type/name "Fire"]]
-                :pokemon/species "Lizard"
-                :pokemon/pokedex-entry "The fire on the tip of its tail is a measure of its life. If the Pokémon is healthy, its tail burns intensely."
-                :pokemon/growth-rate [:pokemon-growth/name "Medium Slow"]
-                :pokemon/egg-groups [[:pokemon-egg-group/name "Dragon"]
-                                     [:pokemon-egg-group/name "Monster"]]
-                :pokemon/base-hp 39
-                :pokemon/base-atk 52
-                :pokemon/base-def 43
-                :pokemon/base-spatk 60
-                :pokemon/base-spdef 50
-                :pokemon/base-spd 65
-                :pokemon/base-total 309
-                :pokemon/evo-type "Level"
-                :pokemon/evo-level 16
-                :pokemon/evo-to -4}
-               {:db/id        -4
-                :pokemon/name "Charmeleon"
-                :pokemon/national-pokedex-id 5
-                :pokemon/type [[:pokemon-type/name "Fire"]]
-                :pokemon/species "Flame"
-                :pokemon/pokedex-entry "In the rocky mountains where Charmeleon live, their fiery tails shine at night like stars."
-                :pokemon/growth-rate [:pokemon-growth/name "Medium Slow"]
-                :pokemon/egg-groups [[:pokemon-egg-group/name "Dragon"]
-                                     [:pokemon-egg-group/name "Monster"]]
-                :pokemon/base-hp 58
-                :pokemon/base-atk 64
-                :pokemon/base-def 58
-                :pokemon/base-spatk 80
-                :pokemon/base-spdef 65
-                :pokemon/base-spd 80
-                :pokemon/base-total 405}
-               {:db/id        -5
-                :pokemon/name "Squirtle"
-                :pokemon/national-pokedex-id 7
-                :pokemon/type [[:pokemon-type/name "Water"]]
-                :pokemon/species "Tiny Turtle"
-                :pokemon/pokedex-entry "It hides in its shell to protect itself, then strikes back with spouts of water at every opportunity."
-                :pokemon/growth-rate [:pokemon-growth/name "Medium Slow"]
-                :pokemon/egg-groups [[:pokemon-egg-group/name "Monster"]
-                                     [:pokemon-egg-group/name "Water1"]]
-                :pokemon/base-hp 44
-                :pokemon/base-atk 48
-                :pokemon/base-def 65
-                :pokemon/base-spatk 50
-                :pokemon/base-spdef 64
-                :pokemon/base-spd 43
-                :pokemon/base-total 314
-                :pokemon/evo-type "Level"
-                :pokemon/evo-level 16
-                :pokemon/evo-to -6}
-               {:db/id        -6
-                :pokemon/name "Wartortle"
-                :pokemon/national-pokedex-id 8
-                :pokemon/type [[:pokemon-type/name "Water"]]
-                :pokemon/species "Turtle"
-                :pokemon/pokedex-entry "It is said to live 10,000 years. Its furry tail is popular as a symbol of longevity."
-                :pokemon/growth-rate [:pokemon-growth/name "Medium Slow"]
-                :pokemon/egg-groups [[:pokemon-egg-group/name "Monster"]
-                                     [:pokemon-egg-group/name "Water1"]]
-                :pokemon/base-hp 59
-                :pokemon/base-atk 63
-                :pokemon/base-def 80
-                :pokemon/base-spatk 65
-                :pokemon/base-spdef 80
-                :pokemon/base-spd 58
-                :pokemon/base-total 405}
-               {:db/id        -7
-                :pokemon/name "Pikachu"
-                :pokemon/national-pokedex-id 25
-                :pokemon/type [[:pokemon-type/name "Electric"]]
-                :pokemon/species "Mouse"
-                :pokemon/pokedex-entry "Possesses cheek sacs in which it stores electricity. This clever forest-dweller roasts tough berries with an electric shock before consuming them."
-                :pokemon/growth-rate [:pokemon-growth/name "Medium Fast"]
-                :pokemon/egg-groups [[:pokemon-egg-group/name "Fairy"]
-                                     [:pokemon-egg-group/name "Field"]]
-                :pokemon/base-hp 35
-                :pokemon/base-atk 55
-                :pokemon/base-def 40
-                :pokemon/base-spatk 50
-                :pokemon/base-spdef 50
-                :pokemon/base-spd 90
-                :pokemon/base-total 320
-                :pokemon/evo-type "Stone"
-                :pokemon/evo-item "Thunder Stone"
-                :pokemon/evo-to -8}
-               {:db/id        -8
-                :pokemon/name "Raichu"
-                :pokemon/national-pokedex-id 26
-                :pokemon/type [[:pokemon-type/name "Electric"]]
-                :pokemon/species "Mouse"
-                :pokemon/pokedex-entry "It can loose 100,000-volt bursts of electricity, instantly downing foes several times its size."
-                :pokemon/growth-rate [:pokemon-growth/name "Medium Fast"]
-                :pokemon/egg-groups [[:pokemon-egg-group/name "Fairy"]
-                                     [:pokemon-egg-group/name "Field"]]
-                :pokemon/base-hp 60
-                :pokemon/base-atk 90
-                :pokemon/base-def 55
-                :pokemon/base-spatk 90
-                :pokemon/base-spdef 80
-                :pokemon/base-spd 110
-                :pokemon/base-total 485}
-               {:db/id        -9
-                :pokemon/name "Eevee"
-                :pokemon/national-pokedex-id 133
-                :pokemon/type [[:pokemon-type/name "Normal"]]
-                :pokemon/species "Evolution"
-                :pokemon/pokedex-entry "Its ability to evolve into many forms allows it to adapt smoothly and perfectly to any environment."
-                :pokemon/growth-rate [:pokemon-growth/name "Medium Fast"]
-                :pokemon/egg-groups [[:pokemon-egg-group/name "Field"]]
-                :pokemon/base-hp 55
-                :pokemon/base-atk 55
-                :pokemon/base-def 50
-                :pokemon/base-spatk 45
-                :pokemon/base-spdef 65
-                :pokemon/base-spd 55
-                :pokemon/base-total 325}])
-
   ;; Query for Pokemon
   (d/q '[:find [?p-name ...]
          :where [?p :pokemon/base-hp ?v]
@@ -307,9 +218,7 @@
                :pokemon/egg-groups [:pokemon-egg-group/name]
                :pokemon/type [:pokemon-type/name]}]
           [:pokemon/name "Bulbasaur"])
-
   )
-
 
 (defn -main []
   (println "hello world"))
