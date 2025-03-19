@@ -175,15 +175,41 @@
 
   (start-pokedex-database)
 
-  ;; Join
-  (d/q '[:find (count ?p-name) .
-           :where [?t :pokemon-type/name ?t-name]
-           [?p :pokemon/type ?t]
-           [?p :pokemon/name ?p-name]
-           :in $ ?t-name]
-         (d/db @datomic-conn) "Grass")
+  (defn count-pokemon-by-type
+    ([type]
+     (d/q '[:find (count ?p-name) .
+            :where [?t :pokemon-type/name ?t-name]
+            [?p :pokemon/type ?t]
+            [?p :pokemon/name ?p-name]
+            :in $ ?t-name]
+          (d/db @datomic-conn) type)
+     )
+    ([type gen]
+     (d/q '[:find (count ?p-name) .
+            :where [?t :pokemon-type/name ?t-name]
+            [?p :pokemon/type ?t]
+            [?p :pokemon/name ?p-name]
+            [?p :pokemon/gen ?gen]
+            :in $ ?t-name ?gen]
+          (d/db @datomic-conn) type gen)
+     )
+    )
 
-  ;; Pull
+  ;; Dummy function that returns sample data until proper calling and mapping of
+  ;; `count-pokemon-by-type` is implemented.
+  (defn get-pokemon-by-type-and-gen []
+    [[1 {"Normal" 22
+        "Fire" 13
+        "Water" 32}]
+     [2 {"Normal" 15
+         "Fire" 10
+         "Water" 18}]
+     [3 {"Normal" 18
+         "Fire" 6
+         "Water" 28}]]
+    )
+
+  ;; Pull and map how some outputs are displayed
   (d/pull (d/db @datomic-conn)
           '[* {:pokemon/growth-rate [:pokemon-growth/name]
                :pokemon/evo-to [:pokemon/name]
