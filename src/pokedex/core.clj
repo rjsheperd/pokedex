@@ -15,19 +15,12 @@
   ;; Transact the schema
   (d/transact @datomic-conn schema)
 
-  (with-open [reader (io/reader (io/resource "Pokemon.csv"))]
-    (doall
-      (csv/read-csv reader)))
-
   (defn csv-data->maps [csv-data]
     (map zipmap
          (->> (first csv-data) ;; First row is the header
               (map keyword) ;; Drop if you want string keys instead
               repeat)
          (rest csv-data)))
-
-  (with-open [reader (io/reader (io/resource "Pokemon.csv"))]
-    (csv-data->maps (doall (csv/read-csv reader))))
 
   (defn transform-pokemon [pokemon]
     (-> pokemon
@@ -40,7 +33,8 @@
                           :sp_atk :pokemon/base-spatk
                           :sp_def :pokemon/base-spdef
                           :speed :pokemon/base-spd
-                          :base_total :pokemon/base-total})
+                          :base_total :pokemon/base-total
+                          :gen :pokemon/gen})
 
         (update :pokemon/national-pokedex-id parse-long)
         (update :pokemon/base-hp parse-long)
@@ -50,38 +44,31 @@
         (update :pokemon/base-spdef parse-long)
         (update :pokemon/base-spd parse-long)
         (update :pokemon/base-total parse-long)
+        (update :pokemon/gen parse-long)
 
         (assoc :pokemon/type
                (if (clojure.string/blank? (:type2 pokemon))
-                 [:pokemon-type/name (:type1 pokemon)]
+                 [[:pokemon-type/name (:type1 pokemon)]]
                  [[:pokemon-type/name (:type1 pokemon)]
                   [:pokemon-type/name (:type2 pokemon)]]
                  )
                )
 
-        (assoc :pokemon/growth-rate [:growth/name (:xp_growth pokemon)])
+        (assoc :pokemon/growth-rate [:pokemon-growth/name (:xp_growth pokemon)])
 
         (dissoc :type1 :type2 :xp_growth :base_happiness :gen :capture_rate :base_egg_steps)
         )
     )
 
-  (transform-pokemon {:base_egg_steps "30720",
-                       :sp_atk "130",
-                       :xp_growth "Slow",
-                       :base_total "600",
-                       :capture_rate "3",
-                       :gen "7",
-                       :speed "65",
-                       :name "Magearna",
-                       :atk "95",
-                       :classification "Artificial",
-                       :nat_id "801",
-                       :type1 "Steel",
-                       :type2 "",
-                       :def "115",
-                       :hp "80",
-                       :sp_def "115",
-                       :base_happiness "0"})
+  (with-open [reader (io/reader (io/resource "Pokemon.csv"))]
+    (->> reader
+         (csv/read-csv)
+         (doall)
+         (csv-data->maps)
+         (map transform-pokemon)
+         (d/transact @datomic-conn)
+         )
+    )
 
   ;; Insert Pokemon Types
   (d/transact @datomic-conn
@@ -178,38 +165,13 @@
                {:pokemon-egg-group/name "Undiscovered"}
                ])
 
-  ;; Query the types
-  (d/q '[:find ?t ?name
-         :where [?t :pokemon-type/name ?name]]
-       (d/db @datomic-conn))
-
-  ;; Query for Pokemon
-  (d/q '[:find [?p-name ...]
-         :where [?p :pokemon/base-hp ?v]
-         [?p :pokemon/name ?p-name]
-         :in $ ?v]
-       (d/db @datomic-conn) 60)
-
   ;; Join
-  (def grass-pokemon
-    (d/q '[:find [?p-name ...]
+  (d/q '[:find (count ?p-name) .
            :where [?t :pokemon-type/name ?t-name]
            [?p :pokemon/type ?t]
            [?p :pokemon/name ?p-name]
            :in $ ?t-name]
-         (d/db @datomic-conn) "Grass"))
-
-  (d/q '[:find [?p-name ...]
-         :where [?set-name :pokemon-type/name ?t-name]
-         [?t :pokemon-type/super-effect-atk ?set-name]
-         [?p :pokemon/type ?t]
-         [?p :pokemon/name ?p-name]
-         :in $ [?t-name ...]]
-       (d/db @datomic-conn) ["Ground" "Rock"])
-
-  (d/q '[:find (min ?stat)
-         :where [_ :pokemon/base-total ?stat]]
-       (d/db @datomic-conn))
+         (d/db @datomic-conn) "Grass")
 
   ;; Pull
   (d/pull (d/db @datomic-conn)
@@ -217,7 +179,7 @@
                :pokemon/evo-to [:pokemon/name]
                :pokemon/egg-groups [:pokemon-egg-group/name]
                :pokemon/type [:pokemon-type/name]}]
-          [:pokemon/name "Bulbasaur"])
+          [:pokemon/name "Espeon"])
   )
 
 (defn -main []

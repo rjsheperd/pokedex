@@ -74,6 +74,11 @@
     :db/valueType   :db.type/long
     :db/cardinality :db.cardinality/one}
 
+   {:db/ident       :pokemon/gen
+    :db/doc         "Which generation the Pokemon is from."
+    :db/valueType   :db.type/long
+    :db/cardinality :db.cardinality/one}
+
    {:db/ident       :pokemon/evo-type
     :db/doc         "Pokemon Evolution label"
     :db/valueType   :db.type/string
