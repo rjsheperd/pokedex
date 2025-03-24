@@ -24,18 +24,33 @@
    )
   )
 
+(defn get-generation-list []
+  (d/q '[:find (distinct ?gen) .
+         :where [_ :pokemon/gen ?gen]]
+       (d/db @datomic-conn))
+  )
+
+(defn get-type-list []
+  (d/q '[:find (distinct ?t-name) .
+         :where [?t :pokemon-type/name ?t-name]
+         [_ :pokemon/type ?t]]
+       (d/db @datomic-conn))
+  )
+
 ;; Dummy function that returns sample data until proper calling and mapping of
 ;; `count-pokemon-by-type` is implemented.
 (defn get-all-type-counts []
-  [[1 {"Normal" 22
-       "Fire" 13
-       "Water" 32}]
-   [2 {"Normal" 15
-       "Fire" 10
-       "Water" 18}]
-   [3 {"Normal" 18
-       "Fire" 6
-       "Water" 28}]]
+  [{:gen 1 :type "Normal" :count 22}
+   {:gen 1 :type "Fire" :count 13}
+   {:gen 1 :type "Water" :count 32}
+
+   {:gen 2 :type "Normal" :count 15}
+   {:gen 2 :type "Fire" :count 10}
+   {:gen 2 :type "Water" :count 18}
+
+   {:gen 3 :type "Normal" :count 18}
+   {:gen 3 :type "Fire" :count 6}
+   {:gen 3 :type "Water" :count 28}]
   )
 
 (comment
@@ -43,6 +58,7 @@
 
   (count-pokemon-by-type "Water" 3)
   (get-all-type-counts)
+  (get-generation-list)
 
   ;; Pull and map how some outputs are displayed
   (d/pull (d/db @datomic-conn)
