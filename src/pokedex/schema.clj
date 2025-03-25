@@ -5,12 +5,21 @@
    {:db/ident       :pokemon/name
     :db/doc         "Pokemon's name"
     :db/valueType   :db.type/string
-    :db/cardinality :db.cardinality/one
-    :db/unique      :db.unique/identity}
+    :db/cardinality :db.cardinality/one}
+
+   {:db/ident       :pokemon/form-name
+    :db/doc         "Pokemon's name"
+    :db/valueType   :db.type/string
+    :db/cardinality :db.cardinality/one}
 
    {:db/ident       :pokemon/national-pokedex-id
     :db/doc         "Pokemon's National Pokedex Identifier"
     :db/valueType   :db.type/long
+    :db/cardinality :db.cardinality/one}
+
+   {:db/ident       :pokemon/unique-id
+    :db/doc         "Pokemon's Unique ID"
+    :db/valueType   :db.type/double
     :db/cardinality :db.cardinality/one
     :db/unique      :db.unique/identity}
 
@@ -26,6 +35,16 @@
 
    {:db/ident       :pokemon/pokedex-entry
     :db/doc         "Pokemon's Pokedex entry"
+    :db/valueType   :db.type/string
+    :db/cardinality :db.cardinality/one}
+
+   {:db/ident       :pokemon/form-category
+    :db/doc         "What category of form this Pokemon is."
+    :db/valueType   :db.type/string
+    :db/cardinality :db.cardinality/one}
+
+   {:db/ident       :pokemon/category
+    :db/doc         "What category of Pokemon this Pokemon is."
     :db/valueType   :db.type/string
     :db/cardinality :db.cardinality/one}
 

@@ -24,6 +24,13 @@
    )
   )
 
+(defn get-pokemon-by-name [name]
+  (d/q '[:find (pull ?p [*])
+         :where [?p :pokemon/name ?p-name]
+         :in $ ?p-name]
+       (d/db @datomic-conn) name)
+  )
+
 (defn get-generation-list []
   (d/q '[:find (distinct ?gen) .
          :where [_ :pokemon/gen ?gen]]
@@ -60,11 +67,18 @@
   (get-all-type-counts)
   (get-generation-list)
 
+  (get-pokemon-by-name "Charizard")
+
   ;; Pull and map how some outputs are displayed
   (d/pull (d/db @datomic-conn)
           '[* {:pokemon/growth-rate [:pokemon-growth/name]
-               :pokemon/evo-to [:pokemon/name]
                :pokemon/egg-groups [:pokemon-egg-group/name]
                :pokemon/type [:pokemon-type/name]}]
-          [:pokemon/name "Bulbasaur"])
+          [:pokemon/unique-id 6.1])
+
+  (d/pull (d/db @datomic-conn)
+          '[* {:pokemon/growth-rate [:pokemon-growth/name]
+               :pokemon/egg-groups [:pokemon-egg-group/name]
+               :pokemon/type [:pokemon-type/name]}]
+          [:pokemon/unique-id 6.1])
   )

@@ -153,19 +153,23 @@
 
 (defn transform-pokemon [pokemon]
   (-> pokemon
-      (set/rename-keys {:name           :pokemon/name
-                        :nat_id         :pokemon/national-pokedex-id
-                        :classification :pokemon/species
-                        :hp             :pokemon/base-hp
-                        :atk            :pokemon/base-atk
-                        :def            :pokemon/base-def
-                        :sp_atk         :pokemon/base-spatk
-                        :sp_def         :pokemon/base-spdef
-                        :speed          :pokemon/base-spd
-                        :base_total     :pokemon/base-total
-                        :gen            :pokemon/gen})
+      (set/rename-keys {:number          :pokemon/national-pokedex-id
+                        :detailed_number :pokemon/unique-id
+                        :name            :pokemon/name
+                        :form_name       :pokemon/form-name
+                        :form_category   :pokemon/form-category
+                        :category        :pokemon/category
+                        :hp              :pokemon/base-hp
+                        :attack          :pokemon/base-atk
+                        :defense         :pokemon/base-def
+                        :sp_atk          :pokemon/base-spatk
+                        :sp_def          :pokemon/base-spdef
+                        :speed           :pokemon/base-spd
+                        :total           :pokemon/base-total
+                        :gen             :pokemon/gen})
 
       (update :pokemon/national-pokedex-id parse-long)
+      (update :pokemon/unique-id parse-double)
       (update :pokemon/base-hp parse-long)
       (update :pokemon/base-atk parse-long)
       (update :pokemon/base-def parse-long)
@@ -175,22 +179,30 @@
       (update :pokemon/base-total parse-long)
       (update :pokemon/gen parse-long)
 
+      ;(assoc :pokemon/name
+      ;       (cond
+      ;         (or (nil? (:pokemon/form-category pokemon)) (clojure.string/blank? (:pokemon/form-category pokemon))) (:name pokemon)
+      ;         (or (= (:pokemon/form-category pokemon) "Mega") (= (:pokemon/form-category pokemon) "Regional")) (:form_name pokemon)
+      ;         :else (str (:name pokemon) " (" (:form_name pokemon) ")")
+      ;         )
+      ;       )
+
       (assoc :pokemon/type
-             (if (clojure.string/blank? (:type2 pokemon))
-               [[:pokemon-type/name (:type1 pokemon)]]
-               [[:pokemon-type/name (:type1 pokemon)]
-                [:pokemon-type/name (:type2 pokemon)]]
+             (if (clojure.string/blank? (:type_2 pokemon))
+               [[:pokemon-type/name (:type_1 pokemon)]]
+               [[:pokemon-type/name (:type_1 pokemon)]
+                [:pokemon-type/name (:type_2 pokemon)]]
                )
              )
 
-      (assoc :pokemon/growth-rate [:pokemon-growth/name (:xp_growth pokemon)])
+      ;(assoc :pokemon/growth-rate [:pokemon-growth/name (:xp_growth pokemon)])
 
-      (dissoc :type1 :type2 :xp_growth :base_happiness :gen :capture_rate :base_egg_steps)
+      (dissoc :name :form_name :type_1 :type_2 :gen :hgt_ft :hgt_m :wgt_lbs :wgt_kg :bmi :evolves_to :evo_family :stage)
       )
   )
 
 (defn populate-pokemon-from-csv []
-  (with-open [reader (io/reader (io/resource "Pokemon.csv"))]
+  (with-open [reader (io/reader (io/resource "PokemonDatabase.csv"))]
     (->> reader
          (csv/read-csv)
          (doall)
