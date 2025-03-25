@@ -1,10 +1,10 @@
-(ns pokedex.db
+(ns clj.pokedex.db
   (:require
     [clojure.data.csv :as csv]
     [clojure.java.io :as io]
     [clojure.set :as set]
     [datomic.api :as d]
-    [pokedex.schema :refer [schema]]))
+    [clj.pokedex.schema :refer [schema]]))
 
 ;;; Connection
 

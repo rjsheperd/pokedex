@@ -9,7 +9,7 @@
 
  :aliases
  {:run 
-  {:main-opts ["-m" "pokedex.server"]}}
+  {:main-opts ["-m" "clj.pokedex.server"]}}
 
  :mvn/repos {"central" {:url "https://repo1.maven.org/maven2/"}
              "clojars" {:url "https://clojars.org/repo"}}}

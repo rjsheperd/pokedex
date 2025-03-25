@@ -1,6 +1,6 @@
-(ns pokedex.pokemon
+(ns clj.pokedex.pokemon
   (:require
-    [pokedex.db :refer [datomic-conn start-pokedex-database]]
+    [clj.pokedex.db :refer [datomic-conn start-pokedex-database]]
     [datomic.api :as d])
   (:gen-class))
 

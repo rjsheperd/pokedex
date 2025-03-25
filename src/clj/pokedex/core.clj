@@ -1,4 +1,4 @@
-(ns pokedex.core
+(ns clj.pokedex.core
   (:gen-class))
 
 (defn -main []

@@ -1,4 +1,4 @@
-(ns pokedex.server
+(ns clj.pokedex.server
   (:require
     [ring.adapter.jetty :as jetty]
     [compojure.core     :as comp]
@@ -6,7 +6,7 @@
     [ring.middleware.params :refer [wrap-params]]
     [ring.middleware.keyword-params :refer [wrap-keyword-params]]
     [clojure.pprint     :as pprint]
-    [pokedex.pokemon    :refer [count-pokemon-by-type get-all-type-counts]])
+    [clj.pokedex.pokemon    :refer [count-pokemon-by-type get-all-type-counts]])
   (:gen-class))
 
 (defonce server (atom nil))
