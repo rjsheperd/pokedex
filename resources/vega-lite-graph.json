@@ -1,0 +1,61 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "data": {
+    "values": [
+      {"Gen":1,"Type":"Normal","Count":22},
+      {"Gen":1,"Type":"Fire","Count":12},
+      {"Gen":1,"Type":"Water","Count":32},
+      {"Gen":1,"Type":"Electric","Count":9},
+      {"Gen":1,"Type":"Grass","Count":14},
+      {"Gen":1,"Type":"Ice","Count":5},
+      {"Gen":1,"Type":"Fighting","Count":8},
+      {"Gen":1,"Type":"Poison","Count":33},
+      {"Gen":1,"Type":"Ground","Count":14},
+      {"Gen":1,"Type":"Flying","Count":19},
+      {"Gen":1,"Type":"Psychic","Count":14},
+      {"Gen":1,"Type":"Bug","Count":12},
+      {"Gen":1,"Type":"Rock","Count":11},
+      {"Gen":1,"Type":"Ghost","Count":3},
+      {"Gen":1,"Type":"Dragon","Count":3},
+      {"Gen":1,"Type":"Dark","Count":0},
+      {"Gen":1,"Type":"Steel","Count":2},
+      {"Gen":1,"Type":"Fairy","Count":5},
+
+      {"Gen":2,"Type":"Normal","Count":22},
+      {"Gen":2,"Type":"Fire","Count":10},
+      {"Gen":2,"Type":"Water","Count":18},
+      {"Gen":2,"Type":"Electric","Count":8},
+      {"Gen":2,"Type":"Grass","Count":10},
+      {"Gen":2,"Type":"Ice","Count":5},
+      {"Gen":2,"Type":"Fighting","Count":3},
+      {"Gen":2,"Type":"Poison","Count":4},
+      {"Gen":2,"Type":"Ground","Count":10},
+      {"Gen":2,"Type":"Flying","Count":19},
+      {"Gen":2,"Type":"Psychic","Count":10},
+      {"Gen":2,"Type":"Bug","Count":10},
+      {"Gen":2,"Type":"Rock","Count":7},
+      {"Gen":2,"Type":"Ghost","Count":1},
+      {"Gen":2,"Type":"Dragon","Count":1},
+      {"Gen":2,"Type":"Dark","Count":6},
+      {"Gen":2,"Type":"Steel","Count":4},
+      {"Gen":2,"Type":"Fairy","Count":8},
+
+      {"Gen": 3,"Type":"Normal","Count":18},
+      {"Gen": 3,"Type":"Fire","Count":6},
+      {"Gen": 3,"Type":"Water","Count":28}
+    ]
+  },
+  "mark": "bar",
+  "encoding": {
+    "x": {"field": "Type"},
+    "y": {"field": "Count", "type": "quantitative"},
+    "row": {"field": "Gen"},
+    "color": {
+      "field": "Type",
+      "scale": {
+        "range":["#AABB22","#775544","#7766EE","#FFCC33","#EE99EE","#BB5544","#FF4422","#8899FF","#6666BB","#77CC55","#DDBB55","#66CCFF","#AAAA99","#AA5599","#FF5599","#BBAA66","#AAAABB","#3399FF"],
+        "domain":["Bug","Dark","Dragon","Electric","Fairy","Fighting","Fire","Flying","Ghost","Grass","Ground","Ice","Normal","Poison","Psychic","Rock","Steel","Water"]
+      }
+    }
+  }
+}
