@@ -1,4 +1,4 @@
-(ns clj.pokedex.schema)
+(ns pokedex.schema)
 
 (def schema
   [;; Pokemon

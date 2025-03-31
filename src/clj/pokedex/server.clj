@@ -1,4 +1,4 @@
-(ns clj.pokedex.server
+(ns pokedex.server
   (:require
     [ring.adapter.jetty :as jetty]
     [compojure.core     :as comp]
@@ -6,7 +6,7 @@
     [ring.middleware.params :refer [wrap-params]]
     [ring.middleware.keyword-params :refer [wrap-keyword-params]]
     [clojure.pprint     :as pprint]
-    [clj.pokedex.pokemon    :refer [count-pokemon-by-type get-all-type-counts]])
+    [pokedex.pokemon    :refer [count-pokemon-by-type get-all-type-counts]])
   (:gen-class))
 
 (defonce server (atom nil))
@@ -19,7 +19,7 @@
                 <li><a href=\"/echo\">Echo request</a></li>
               </ul>"
        :headers {"Content-Type" "text/html; charset=UTF-8"}})
-    (comp/GET "/q-type-count" req
+    (comp/GET "/api/q-type-count" req
       (let [{:keys [type gen]} (:params req)
             result (if (= gen nil)
               (count-pokemon-by-type type)
@@ -28,7 +28,7 @@
         {:status 200
          :body (str result)
          :headers {"Content-Type" "text/plain"}}))
-    (comp/GET "/all-type-counts" []
+    (comp/GET "/api/all-type-counts" []
       {:status 200
        :body (str (get-all-type-counts))
        :headers {"Content-Type" "text/plain"}})
@@ -49,7 +49,7 @@
 (defn start-server! []
   (reset! server
           (jetty/run-jetty (fn [req] (app req))
-                           {:port 3001
+                           {:port 9020
                             :join? false}))) ;; don't block the main thread
 
 (defn stop-server! []
