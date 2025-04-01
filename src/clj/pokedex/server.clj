@@ -6,7 +6,7 @@
     [ring.middleware.params :refer [wrap-params]]
     [ring.middleware.keyword-params :refer [wrap-keyword-params]]
     [clojure.pprint     :as pprint]
-    [pokedex.pokemon    :refer [count-pokemon-by-type get-all-type-counts]])
+    [pokedex.pokemon    :refer [count-pokemon-by-type get-all-type-counts get-type-list]])
   (:gen-class))
 
 (defonce server (atom nil))
@@ -31,6 +31,10 @@
     (comp/GET "/api/all-type-counts" []
       {:status 200
        :body (str (get-all-type-counts))
+       :headers {"Content-Type" "text/plain"}})
+    (comp/GET "/api/get-types" []
+      {:status 200
+       :body (str (get-type-list))
        :headers {"Content-Type" "text/plain"}})
     (comp/ANY "/echo" req
       {:status 200

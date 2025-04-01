@@ -6,21 +6,25 @@
 
 (defn count-pokemon-by-type
   ([type]
-   (d/q '[:find (count ?p-name) .
-          :where [?t :pokemon-type/name ?t-name]
-          [?p :pokemon/type ?t]
-          [?p :pokemon/name ?p-name]
-          :in $ ?t-name]
-        (d/db @datomic-conn) type)
+   (let [count (d/q '[:find (count ?p-name) .
+                      :where [?t :pokemon-type/name ?t-name]
+                      [?p :pokemon/type ?t]
+                      [?p :pokemon/name ?p-name]
+                      :in $ ?t-name]
+                    (d/db @datomic-conn) type)]
+     {:Type type :Count count}
+     )
    )
   ([type gen]
-   (d/q '[:find (count ?p-name) .
-          :where [?t :pokemon-type/name ?t-name]
-          [?p :pokemon/type ?t]
-          [?p :pokemon/name ?p-name]
-          [?p :pokemon/gen ?gen]
-          :in $ ?t-name ?gen]
-        (d/db @datomic-conn) type gen)
+   (let [count (d/q '[:find (count ?p-name) .
+                      :where [?t :pokemon-type/name ?t-name]
+                      [?p :pokemon/type ?t]
+                      [?p :pokemon/name ?p-name]
+                      [?p :pokemon/gen ?gen]
+                      :in $ ?t-name ?gen]
+                    (d/db @datomic-conn) type gen)]
+     {:Gen gen :Type type :Count count}
+     )
    )
   )
 
@@ -47,18 +51,12 @@
 ;; Dummy function that returns sample data until proper calling and mapping of
 ;; `count-pokemon-by-type` is implemented.
 (defn get-all-type-counts []
-  [{:gen 1 :type "Normal" :count 22}
-   {:gen 1 :type "Fire" :count 13}
-   {:gen 1 :type "Water" :count 32}
-
-   {:gen 2 :type "Normal" :count 15}
-   {:gen 2 :type "Fire" :count 10}
-   {:gen 2 :type "Water" :count 18}
-
-   {:gen 3 :type "Normal" :count 18}
-   {:gen 3 :type "Fire" :count 6}
-   {:gen 3 :type "Water" :count 28}]
-  )
+  (let [gens  (get-generation-list)
+        types (get-type-list)]
+    (into []
+          (for [gen gens
+                type types]
+            (count-pokemon-by-type type gen)))))
 
 (comment
   (start-pokedex-database)

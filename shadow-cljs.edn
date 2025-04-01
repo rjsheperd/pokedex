@@ -6,6 +6,7 @@
                 [cljs-http "0.1.48"]
                 [cljsjs/react "18.3.1-1"]
                 [cljsjs/react-dom "18.3.1-1"]
+                [metasoarous/oz "1.6.0-alpha36"]
                 ]
 
  :dev-http {
