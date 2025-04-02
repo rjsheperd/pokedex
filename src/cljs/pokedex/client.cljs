@@ -27,7 +27,7 @@
        (if (= 200 (:status response))
          (:body response)
          (do (println "Error fetching type count:" response)
-             nil)))))
+             0)))))
   ([type gen]
    (go
      (let [response (<! (http/get "/api/q-type-count" {:with-credentials? false
@@ -35,4 +35,4 @@
        (if (= 200 (:status response))
          (:body response)
          (do (println "Error fetching type count:" response)
-             nil))))))
+             0))))))
