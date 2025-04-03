@@ -39,28 +39,37 @@
         type-options        (re-frame/subscribe [:graph/type-options])
         all-type-counts     (re-frame/subscribe [:graph/all-type-counts])
         single-type-results (re-frame/subscribe [:graph/single-type-results])]
-    (fn []
-      [:div {:style {:display "flex" :flexDirection "column"}}
-       ;; Multi-bar chart section.
-       [:div
-        [:h1 "Pokemon Counts by Generation and Type"]
-        [:button {:on-click #(re-frame/dispatch [:graph/fetch-all-type-counts])}
-         "Refresh All Type Counts"]
 
-        [oz/vega-lite (multi-bar-chart-spec @all-type-counts)]]
+        [:div {:style {:display "flex" :flexDirection "column"}}
+         ;; Multi-bar chart section.
+         [:div
+          [:h1 "Pokemon Counts by Generation and Type"]
+          [:button {:on-click #(re-frame/dispatch [:graph/fetch-all-type-counts])}
+           "Refresh All Type Counts"]
 
-       ;; Single-type chart section.
-       [:div
-        [:h1 "Pokemon Counts by Type"]
-        [:select {:value @selected-type
-                  :on-change #(re-frame/dispatch [:graph/set-selected-type (-> % .-target .-value)])
-                  :style {:marginBottom "10px"}}
-         (if (seq @type-options)
-           (for [t @type-options]
-             ^{:key t} [:option {:value t} t])
-           [:option {:value "Loading"} "Loading..."])]
+          (if (seq @all-type-counts)
+            [oz/vega-lite (multi-bar-chart-spec @all-type-counts)]
+            [:div "Loading graph data..."]
+            )
+          ]
 
-        [:button {:on-click #(re-frame/dispatch [:graph/fetch-type-count])}
-         "Query by Single Type"]
+         ;; Single-type chart section.
+         [:div
+          [:h1 "Pokemon Counts by Type"]
+          [:select {:value (or @selected-type "")
+                    :on-change #(re-frame/dispatch [:graph/set-selected-type (-> % .-target .-value)])
+                    :style {:marginBottom "10px"}}
+           (if (seq @type-options)
+             (for [t @type-options]
+               ^{:key t} [:option {:value t} t])
+             [:option {:value "Loading"} "Loading..."])]
 
-        [oz/vega-lite (type-bar-chart-spec @single-type-results)]]])))
+          [:button {:on-click #(re-frame/dispatch [:graph/fetch-type-count])}
+           "Query by Single Type"]
+
+          (if (seq @single-type-results)
+            [oz/vega-lite (type-bar-chart-spec @single-type-results)]
+            [:div "Loading graph data..."]
+            )
+          ]]
+        ))

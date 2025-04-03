@@ -11,8 +11,8 @@
   (fn [_ _]
     {:all-type-counts []
      :selected-type "Normal"
-     :type-options []
-     :single-type-results []
+     :type-options nil
+     :single-type-results nil
      }))
 
 (re-frame/reg-event-db
@@ -40,11 +40,10 @@
   (fn [{:keys [db]} _]
     (go (let [data (<! (client/fetch-type-list))]
           (when data
-            (let [options (edn/read-string (:body data))]
-              (re-frame/dispatch [:graph/set-type-options options])
+            (re-frame/dispatch [:graph/set-type-options data])
 
-              (when-not (some #(= (:selected-type db) %) options)
-                (re-frame/dispatch [:graph/set-selected-type (first options)]))))))
+            (when-not (some #(= (:selected-type db) %) data)
+              (re-frame/dispatch [:graph/set-selected-type (first data)])))))
     {}))
 
 (re-frame/reg-event-fx
@@ -52,8 +51,7 @@
   (fn [{:keys [db]} _]
     (go (let [data (<! (client/fetch-all-type-counts))]
           (when data
-            (let [counts (edn/read-string (:body data))]
-              (re-frame/dispatch [:graph/set-all-type-counts counts])))))
+            (re-frame/dispatch [:graph/set-all-type-counts data]))))
     {}))
 
 (re-frame/reg-event-fx
@@ -62,6 +60,5 @@
     (let [type (:selected-type db)]
       (go (let [data (<! (client/fetch-type-count type))]
             (when data
-              (let [results (edn/read-string (:body data))]
-                (re-frame/dispatch [:graph/set-single-type-results results])))))
+                (re-frame/dispatch [:graph/set-single-type-results data]))))
       {})))
